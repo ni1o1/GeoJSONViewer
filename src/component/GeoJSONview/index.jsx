@@ -71,8 +71,8 @@ export default function ODview() {
                     });
                     jsondataLayer.strokeColor = 'black'
                     jsondataLayer.fillColor = 'darkolivegreen'
-                    jsondataLayer.FillOpacity = 0.8
-                    jsondataLayer.StrokeOpacity = 0.8
+                    jsondataLayer.fillOpacity = 0.8
+                    jsondataLayer.strokeOpacity = 0.8
                     jsondataLayer.strokeWeight = 2
 
                     jsondataLayer.addEventListener('mousemove', function (e) {
@@ -178,7 +178,7 @@ export default function ODview() {
                                     key: 'StrokeWeight',
                                     render: (text, record) => {
                                         const layer = customlayers.filter(item => item.layerName == record.layerName)[0]
-                                        return <InputNumber min={1} max={10} defaultValue={layer.strokeWeight} 
+                                        return <InputNumber min={0} max={10} defaultValue={layer.strokeWeight} 
                                         style = {{width: '50px'}}
                                         onChange={(value) => {
                                             layer.getData().map(f => {
@@ -202,7 +202,7 @@ export default function ODview() {
                                             layer.getData().map(f => {
                                                 f.setStrokeOpacity && f.setStrokeOpacity(color.metaColor.a)
                                             })
-                                            layer.StrokeOpacity = color.metaColor.a
+                                            layer.strokeOpacity = color.metaColor.a
                                         }} />
                                     }
                                 },
@@ -220,7 +220,7 @@ export default function ODview() {
                                             layer.getData().map(f => {
                                                 f.setFillOpacity && f.setFillOpacity(color.metaColor.a)
                                             })
-                                            layer.FillOpacity = color.metaColor.a
+                                            layer.fillOpacity = color.metaColor.a
                                         }} />
                                     }
                                 },
