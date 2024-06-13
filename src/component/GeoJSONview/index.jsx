@@ -39,7 +39,7 @@ export default function ODview() {
                     const jsondata = JSON.parse(data)
 
 
-
+                    
                     //geojson图层
                     const jsondataLayer = new BMapGL.GeoJSONLayer(file.name, {
                         reference: 'WGS84',
@@ -55,11 +55,13 @@ export default function ODview() {
                         polygonStyle: function (properties) {
                             var index = properties.join || 0;
                             return {
-                                fillColor: colorBand[index]
+                                fillColor: colorBand[index],
+                                strokeColor:'black'
                             }
                         },
                         markerStyle: function (properties) {
                             return {
+
                             }
                         },
                     });
@@ -73,17 +75,24 @@ export default function ODview() {
                                 info: {}
                             })
                         } else {
+                            // 获取要素
+                            const feature = e.features[0];
+                            // 高亮要素
+                            feature.setFillColor && feature.setFillColor('red')
+                            feature.setStrokeColor && feature.setStrokeColor('red')
                             setTooltip_redux({
                                 title: file.name,
                                 x: e.pixel.x,
                                 y: e.pixel.y,
                                 show: true,
                                 info: e.features[0].properties
-                            })
+                            }) 
                         }
                     })
                     jsondataLayer.addEventListener('mouseout', function (e) {
-
+                        // 获取要素
+                        // 取消高亮
+                        jsondataLayer.resetStyle()
                         setTooltip_redux({
                             x: 0,
                             y: 0,
@@ -183,7 +192,6 @@ export default function ODview() {
                                     }
                                 }).sort((a, b) => a.level - b.level)
                                 } />
-                            <Button onClick={() => { console.log(customlayers) }}>显示</Button>
                         </Panel>
                     </Collapse>
                 </Card>

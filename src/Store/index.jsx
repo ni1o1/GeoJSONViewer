@@ -1,8 +1,12 @@
 import BMap from './modules/BMap'
-import {configureStore} from '@reduxjs/toolkit' 
+import { configureStore } from '@reduxjs/toolkit'
 const store = configureStore({
-  reducer:{
-    BMap:BMap
-  }
+  reducer: {
+    BMap: BMap
+  },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }),
 })
 export default store
