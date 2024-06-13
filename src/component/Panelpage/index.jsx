@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Tabs, Layout, Button, Menu, Switch } from 'antd';
-import ODview from '../ODview';
+import GeoJSONview from '../GeoJSONview';
 import { Dropdown, Modal, message } from 'antd';
 import { PageHeader } from '@ant-design/pro-layout';
 import { DownOutlined, SettingOutlined, UpOutlined, SyncOutlined, LockOutlined, ExportOutlined, GlobalOutlined } from '@ant-design/icons';
@@ -33,15 +33,15 @@ export default function Panelpage() {
     <Menu
       mode="inline"
       onClick={handleClick}
-      defaultSelectedKeys={['ODview']}
+      defaultSelectedKeys={['GeoJSONview']}
       style={{
         borderRight: 0,
         'overflowX': 'hidden',
         'overflowY': 'auto'
       }}
     >
-      <SubMenu key="sub1" icon={<NodeIndexOutlined />} title="OD view">
-        <Menu.Item key="ODview" icon={<NodeIndexOutlined />}>OD view</Menu.Item>
+      <SubMenu key="sub1" icon={<NodeIndexOutlined />} title="GeoJSON view">
+        <Menu.Item key="GeoJSONview" icon={<NodeIndexOutlined />}>GeoJSON view</Menu.Item>
       </SubMenu>
     </Menu>
     <Button type="text" onClick={() => { setcollapsedmenu(!collapsedmenu) }} style={{ margin: '10px 16px' }}>
@@ -92,7 +92,7 @@ export default function Panelpage() {
     </SubMenu>
   </Menu>
   );
-  const [activepage, setactivepage] = useState('ODview')
+  const [activepage, setactivepage] = useState('GeoJSONview')
 
   const [collapsedpanel, setcollapsedpanel] = useState(true)
 
@@ -127,8 +127,8 @@ export default function Panelpage() {
           <Layout>
             <Content>
               <Tabs tabPosition="left" size='small' renderTabBar={(a, b) => cardmenu} activeKey={activepage}>
-                <TabPane key="ODview" >
-                  <ODview />
+                <TabPane key="GeoJSONview" >
+                  <GeoJSONview />
                 </TabPane>
               </Tabs>
             </Content>

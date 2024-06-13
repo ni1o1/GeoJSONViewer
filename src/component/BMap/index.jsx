@@ -1,11 +1,15 @@
 import React, { useEffect } from 'react'
 import { Map, Marker, NavigationControl, InfoWindow } from 'react-bmapgl';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setMap } from '../../Store/modules/BMap';
-
+import './index.css';
 const BMapGL = window.BMapGL;
 
 function App() {
+
+  //redux
+  const { tooltip } = useSelector((state) => state.BMap);
+
   const dispatch = useDispatch();
 
   const setMap1 = (map) => {
@@ -27,16 +31,24 @@ function App() {
     map.addControl(zoomCtrl);
     var locationCtrl = new BMapGL.LocationControl();  // 添加定位控件
     map.addControl(locationCtrl);
-    
+
     var cityCtrl = new BMapGL.CityListControl();  // 添加城市列表控件
     cityCtrl.setAnchor(window.BMAP_ANCHOR_TOP_RIGHT);
     map.addControl(cityCtrl);
-
     setMap1(map)
 
   }, []);
 
   return (
+    <div style={{
+      width: "100%",
+      height: "100%",
+      overflow: 'hidden',
+      position: 'absolute',
+      top: 0,
+      display: 'flex',
+      zIndex: 0
+    }}>
     <div id="allmap" style={{
       width: "100%",
       height: "100%",
@@ -45,7 +57,27 @@ function App() {
       top: 0,
       display: 'flex',
       zIndex: 0
-    }}></div>
+    }}/>
+   
+
+          <div className='tooltip' style={{
+                left: tooltip.x,
+                top: tooltip.y,
+                position: 'absolute',
+                display: tooltip.show ? 'block' : 'none',
+                zIndex: 999,
+            }}>
+                <div className='tooltip-title'>
+                  {tooltip.title}
+                </div>
+                <div className='tooltip-content'>
+                    {Object.keys(tooltip.info).map((key, index) => {
+                        return <div key={index}>
+                          <span className='tooltip-key'>{key}:</span>{tooltip.info[key]}</div>
+                    })}
+                </div>
+            </div>
+    </div>
   );
 }
 
