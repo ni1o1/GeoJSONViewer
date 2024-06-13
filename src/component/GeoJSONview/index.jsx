@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react'
-import { Col, Card, Tooltip, Button, Table, Collapse, Upload, message, InputNumber } from 'antd';
+import { Col, Card, Tooltip, ColorPicker, Button, Table, Collapse, Upload, message, InputNumber } from 'antd';
 import {
     InfoCircleOutlined, InboxOutlined
 } from '@ant-design/icons';
@@ -37,26 +37,30 @@ export default function ODview() {
                 const data = f.target.result
                 if (file.name.slice(-4) == 'json') {
                     const jsondata = JSON.parse(data)
-
-
-                    
                     //geojson图层
                     const jsondataLayer = new BMapGL.GeoJSONLayer(file.name, {
                         reference: 'WGS84',
                         dataSource: jsondata,         // 数据
+                        opacity: 0.8,               // 图层透明度
                         level: -10,                // 显示层级，由于系统内部问题，GeoJSONLayer图层等级使用负数表达，负数越大层级越高，默认-99
                         minZoom: 1,               // 设置图层显示的地图最小等级
                         maxZoom: 30,                // 设置图层显示的地图最大等级
                         polylineStyle: function (properties) {
                             return {
-                                strokeColor: 'blue'
+                                fillColor: 'darkolivegreen',
+                                fillOpacity: 0.8,
+                                strokeColor: 'black',
+                                strokeOpacity: 0.8,
+                                strokeWeight: 2
                             }
                         },
                         polygonStyle: function (properties) {
-                            var index = properties.join || 0;
                             return {
-                                fillColor: colorBand[index],
-                                strokeColor:'black'
+                                fillColor: 'darkolivegreen',
+                                fillOpacity: 0.8,
+                                strokeColor: 'black',
+                                strokeOpacity: 0.8,
+                                strokeWeight: 2
                             }
                         },
                         markerStyle: function (properties) {
@@ -65,6 +69,12 @@ export default function ODview() {
                             }
                         },
                     });
+                    jsondataLayer.strokeColor = 'black'
+                    jsondataLayer.fillColor = 'darkolivegreen'
+                    jsondataLayer.FillOpacity = 0.8
+                    jsondataLayer.StrokeOpacity = 0.8
+                    jsondataLayer.strokeWeight = 2
+
                     jsondataLayer.addEventListener('mousemove', function (e) {
                         if (e.features.length == 0) {
                             setTooltip_redux({
@@ -86,18 +96,23 @@ export default function ODview() {
                                 y: e.pixel.y,
                                 show: true,
                                 info: e.features[0].properties
-                            }) 
+                            })
                         }
                     })
                     jsondataLayer.addEventListener('mouseout', function (e) {
                         // 获取要素
                         // 取消高亮
-                        jsondataLayer.resetStyle()
+                        jsondataLayer.getData().map(f => {
+                            f.setFillColor && f.setFillColor(jsondataLayer.fillColor)
+                        })
+                        jsondataLayer.getData().map(f => {
+                            f.setStrokeColor && f.setStrokeColor(jsondataLayer.strokeColor)
+                        })
                         setTooltip_redux({
                             x: 0,
                             y: 0,
                             show: false,
-                            info: { 'a': 'a' }
+                            info: {}
                         })
                     })
                     //添加图层
@@ -150,13 +165,66 @@ export default function ODview() {
                                     dataIndex: 'level',
                                     key: 'level',
                                     render: (text, record) => (
-                                        <InputNumber min={0} max={10} defaultValue={text} onChange={(value) => {
+                                        <InputNumber min={0} max={10} defaultValue={text}
+                                        style = {{width: '50px'}} onChange={(value) => {
                                             const layer = customlayers.filter(item => item.layerName == record.layerName)[0]
                                             layer && layer.setLevel(value - 15)
                                         }} />
                                     )
                                 },
+
                                 {
+                                    title: '边粗细',
+                                    key: 'StrokeWeight',
+                                    render: (text, record) => {
+                                        const layer = customlayers.filter(item => item.layerName == record.layerName)[0]
+                                        return <InputNumber min={1} max={10} defaultValue={layer.strokeWeight} 
+                                        style = {{width: '50px'}}
+                                        onChange={(value) => {
+                                            layer.getData().map(f => {
+                                                f.setStrokeWeight && f.setStrokeWeight(value)
+                                            })
+                                            layer.strokeWeight = value
+                                        }
+                                    }></InputNumber>}
+                                },
+                                {
+                                    title: '边颜色',
+                                    key: 'color',
+                                    render: (text, record) => {
+                                        const layer = customlayers.filter(item => item.layerName == record.layerName)[0]
+                                        return <ColorPicker defaultValue={layer.strokeColor} onChange={(color) => {
+                                            layer.getData().map(f => {
+                                                f.setStrokeColor && f.setStrokeColor(color.toHexString())
+                                            })
+                                            layer.strokeColor = color.toHexString()
+
+                                            layer.getData().map(f => {
+                                                f.setStrokeOpacity && f.setStrokeOpacity(color.metaColor.a)
+                                            })
+                                            layer.StrokeOpacity = color.metaColor.a
+                                        }} />
+                                    }
+                                },
+                                {
+                                    title: '填充颜色',
+                                    key: 'color',
+                                    render: (text, record) => {
+                                        const layer = customlayers.filter(item => item.layerName == record.layerName)[0]
+                                        return <ColorPicker defaultValue={layer.fillColor} onChange={(color) => {
+                                            layer.getData().map(f => {
+                                                f.setFillColor && f.setFillColor(color.toHexString())
+                                            })
+                                            layer.fillColor = color.toHexString()
+                                            
+                                            layer.getData().map(f => {
+                                                f.setFillOpacity && f.setFillOpacity(color.metaColor.a)
+                                            })
+                                            layer.FillOpacity = color.metaColor.a
+                                        }} />
+                                    }
+                                },
+                                 {
                                     title: '操作',
                                     key: 'action',
                                     render: (text, record) => (
@@ -165,25 +233,18 @@ export default function ODview() {
                                                 const layer = customlayers.filter(item => item.layerName == record.layerName)[0]
                                                 layer && map.removeGeoJSONLayer(layer)
                                                 removeCustomLayers_redux(record.layerName)
+                                                setTooltip_redux({
+                                                    x: 0,
+                                                    y: 0,
+                                                    show: false,
+                                                    info: {}
+                                                })
                                             }}>删除</a>
                                         </span>
                                     ),
-                                },
+                                }
                             ]}
-                                onRow={(record) => {
-                                    return {
-                                        onMouseEnter: () => {
-                                            const layer = customlayers.filter(item => item.layerName == record.layerName)[0]
-                                            layer.setLevel(record.level + 15)
-
-                                        },
-                                        onMouseLeave: () => {
-                                            const layer = customlayers.filter(item => item.layerName == record.layerName)[0]
-                                            layer.setLevel(record.level - 15)
-                                            layer.resetStyle()
-                                        },
-                                    }
-                                }}
+                                
                                 dataSource={customlayers.map((layer, index) => {
                                     return {
                                         layerName: layer.layerName,

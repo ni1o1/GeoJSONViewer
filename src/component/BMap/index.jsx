@@ -5,7 +5,7 @@ import { setMap } from '../../Store/modules/BMap';
 import './index.css';
 import { setCurrentCoords } from '../../Store/modules/BMap';
 import { bd09towgs84 } from './coordtransform';
-
+import axios from 'axios';
 const BMapGL = window.BMapGL;
 
 function App() {
@@ -24,9 +24,8 @@ function App() {
   }
 
 
-
   useEffect(() => {
-    const map = new BMapGL.Map("allmap");    // 创建Map实例
+    const map = new BMapGL.Map("allmap", { enableIconClick: true });    // 创建Map实例
     map.centerAndZoom(new BMapGL.Point(116.280190, 40.049191), 12);  // 初始化地图,设置中心点坐标和地图级别
     map.enableScrollWheelZoom(true);     //开启鼠标滚轮缩放
     map.setHeading(0);
@@ -41,12 +40,41 @@ function App() {
     var locationCtrl = new BMapGL.LocationControl();  // 添加定位控件
     map.addControl(locationCtrl);
 
-    var cityCtrl = new BMapGL.CityListControl();  // 添加城市列表控件
-    cityCtrl.setAnchor(window.BMAP_ANCHOR_TOP_RIGHT);
-    map.addControl(cityCtrl);
     map.addEventListener('mousemove', function (e) {
       setCurrentCoords_redux(bd09towgs84(e.latlng.lng, e.latlng.lat))
     })
+
+    // 地图选poi展示提示框
+    //全局变量记录插入的jsonp标签
+    window.clickPoint = null;
+    window.script = null;
+    let clickPoint
+    let script
+    window.sucess = function (res) {
+      if (res.uii_err === 0 && res.content) {
+        var info = res.content;
+        var sContent = `<h4 style='margin:0 0 5px 10px;'>${info.name}</h4>
+				<h5 style='margin:0 0 5px 10px;'>地址：${info.addr}</h4>
+				<h5 style='margin:0 0 35px 10px;'>分类：${info.tag !== '境外区域' || info.tag === info.name ? info.tag : '地址'}</h4>`;
+        var infoWindow = new BMapGL.InfoWindow(sContent);  // 创建信息窗口对象 
+        map.openInfoWindow(infoWindow, clickPoint); //开启信息窗口
+        // 移除插入的标签，防止越插入越多
+        document.getElementsByTagName('head')[0].removeChild(script);
+      }
+    }
+    map.addEventListener('click', e => {
+
+      clickPoint = e.latlng;
+      const point = e.point;
+      const itemId = map.getIconByClickPosition(e);
+
+      if (itemId) {
+        let url = `https://api.map.baidu.com/?qt=inf&uid=${itemId.uid}&operate=mapclick&clicktype=tile&ie=utf-8&oue=1&fromproduct=jsapi&res=api&&ak=f8GgvXGNa3rCqHkmrAdAgPm3YFV12uTi&callback=sucess`
+        script = document.createElement('script');
+        script.setAttribute('src', url);
+        document.getElementsByTagName('head')[0].appendChild(script);
+      }
+    });
     setMap1(map)
 
   }, []);
