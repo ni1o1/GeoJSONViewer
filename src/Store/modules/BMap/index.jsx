@@ -10,6 +10,11 @@ const bmapStore = createSlice({
       y:'0',
       show:false,
       info:{}
+    },
+    currentcoords:{
+      bd09coord:[0,0],
+      gcj02coord:[0,0],
+      wgs84coord:[0,0]
     }
   },
   reducers: {
@@ -24,11 +29,14 @@ const bmapStore = createSlice({
     },
     setTooltip(state, action) {
       state.tooltip = action.payload
+    },
+    setCurrentCoords(state, action) {
+      state.currentcoords = action.payload
     }
   }
 })
-const { setMap,addCustomLayers,removeCustomLayers,setTooltip } = bmapStore.actions
-export { setMap,addCustomLayers,removeCustomLayers,setTooltip }
+const { setMap,addCustomLayers,removeCustomLayers,setTooltip,setCurrentCoords } = bmapStore.actions
+export { setMap,addCustomLayers,removeCustomLayers,setTooltip,setCurrentCoords }
 
 const reducer = bmapStore.reducer
 export default reducer
