@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { Col, Card, Tooltip, ColorPicker, Button, Table, Collapse, Upload, message, InputNumber } from 'antd';
 import {
-    InfoCircleOutlined, InboxOutlined
+    InfoCircleOutlined, InboxOutlined, DeleteFilled, DownloadOutlined, EyeOutlined, EyeInvisibleOutlined
 } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
 import * as turf from '@turf/turf';
-import { addCustomLayers, removeCustomLayers, setTooltip } from '../../Store/modules/BMap';
+import { addCustomLayers, removeCustomLayers, setTooltip, setGeojsonEditTooltip } from '../../Store/modules/BMap';
+import { downloadFile } from '@/utils/downloadFile';
+import { bd09towgs84, bd09mctobd09 } from '@/utils/coordtransform';
 const { Dragger } = Upload;
 const { Panel } = Collapse;
 const BMapGL = window.BMapGL;
@@ -25,7 +27,9 @@ export default function ODview() {
     const setTooltip_redux = (data) => {
         dispatch(setTooltip(data));
     }
-
+    const setGeojsonEditTooltip_redux = (data) => {
+        dispatch(setGeojsonEditTooltip(data));
+    }
     var colorBand = ['darkolivegreen', 'cadetblue', 'orange', 'red', 'tan'];
 
     const handleupload_geojson = (file) => {
@@ -99,6 +103,22 @@ export default function ODview() {
                             })
                         }
                     })
+                    jsondataLayer.addEventListener('click', function (e) {
+                        if (e.features) {
+                            // 获取要素
+                            const feature = e.features[0];
+                            if (feature._className == 'PolygonOut' || feature._className == 'PolylineOut') {
+                                setGeojsonEditTooltip_redux({
+                                    title: file.name,
+                                    x: e.pixel.x,
+                                    y: e.pixel.y,
+                                    show: true,
+                                    editItem: e.features[0]
+                                })
+                            }
+                        }
+                    })
+
                     jsondataLayer.addEventListener('mouseout', function (e) {
                         // 获取要素
                         // 取消高亮
@@ -127,7 +147,52 @@ export default function ODview() {
             }
         })
     }
+    const obj2geojson = (obj) => {
+        var features = []
+        console.log(obj)
+        obj.map(f => {
+            if (f._className == 'PolylineOut') {
+                var feature = {
+                    type: 'Feature',
+                    properties: f.properties,
+                    geometry: {
+                        type: 'LineString',
+                        coordinates: f.points.map(f => {
+                            const bd09 = bd09mctobd09(f.lng, f.lat)
+                            return bd09towgs84(bd09[0], bd09[1]).wgs84coord
+                        })
+                    }
+                }
+            } else if (f._className == 'PolygonOut') {
+                var feature = {
+                    type: 'Feature',
+                    properties: f.properties,
+                    geometry: {
+                        type: 'Polygon',
+                        coordinates: [f.points.map(f => {
+                            const bd09 = bd09mctobd09(f.lng, f.lat)
+                            return bd09towgs84(bd09[0], bd09[1]).wgs84coord
+                        })]
+                    }
+                }
+            } else if (f._className == 'MarkerOut') {
+                var feature = {
+                    type: 'Feature',
+                    properties: f.properties,
+                    geometry: {
+                        type: 'Point',
+                        coordinates: bd09towgs84(f.lng, f.lat).wgs84coord
+                    }
+                }
+            }
 
+            features.push(feature)
+        })
+        return {
+            type: 'FeatureCollection',
+            features: features
+        }
+    }
     return (
         <>
             <Col span={24}>
@@ -146,16 +211,16 @@ export default function ODview() {
                                 </p>
                             </Dragger>
                         </Panel>
-                        <Panel header="图层管理" key="Layers">
+                        <Panel header="图层管理" key="Layers" style={{ overflowY: 'scroll' }}>
                             <Table size='small' columns={[
                                 {
-                                    title: '图层',
+                                    title: '文件',
                                     dataIndex: 'layerName',
                                     key: 'layerName',
                                     render: text => text
                                 },
                                 {
-                                    title: '要素数量',
+                                    title: '要素数',
                                     dataIndex: 'overlayData',
                                     key: 'overlayData',
                                     render: text => text
@@ -165,11 +230,11 @@ export default function ODview() {
                                     dataIndex: 'level',
                                     key: 'level',
                                     render: (text, record) => (
-                                        <InputNumber min={0} max={10} defaultValue={text}
-                                        style = {{width: '50px'}} onChange={(value) => {
-                                            const layer = customlayers.filter(item => item.layerName == record.layerName)[0]
-                                            layer && layer.setLevel(value - 15)
-                                        }} />
+                                        <InputNumber min={0} max={10} defaultValue={text} size='small'
+                                            style={{ width: '40px' }} onChange={(value) => {
+                                                const layer = customlayers.filter(item => item.layerName == record.layerName)[0]
+                                                layer && layer.setLevel(value - 15)
+                                            }} />
                                     )
                                 },
 
@@ -178,15 +243,16 @@ export default function ODview() {
                                     key: 'StrokeWeight',
                                     render: (text, record) => {
                                         const layer = customlayers.filter(item => item.layerName == record.layerName)[0]
-                                        return <InputNumber min={0} max={10} defaultValue={layer.strokeWeight} 
-                                        style = {{width: '50px'}}
-                                        onChange={(value) => {
-                                            layer.getData().map(f => {
-                                                f.setStrokeWeight && f.setStrokeWeight(value)
-                                            })
-                                            layer.strokeWeight = value
-                                        }
-                                    }></InputNumber>}
+                                        return <InputNumber min={0} max={10} defaultValue={layer.strokeWeight} size='small'
+                                            style={{ width: '40px' }}
+                                            onChange={(value) => {
+                                                layer.getData().map(f => {
+                                                    f.setStrokeWeight && f.setStrokeWeight(value)
+                                                })
+                                                layer.strokeWeight = value
+                                            }
+                                            }></InputNumber>
+                                    }
                                 },
                                 {
                                     title: '边颜色',
@@ -207,7 +273,7 @@ export default function ODview() {
                                     }
                                 },
                                 {
-                                    title: '填充颜色',
+                                    title: '填充色',
                                     key: 'color',
                                     render: (text, record) => {
                                         const layer = customlayers.filter(item => item.layerName == record.layerName)[0]
@@ -216,7 +282,7 @@ export default function ODview() {
                                                 f.setFillColor && f.setFillColor(color.toHexString())
                                             })
                                             layer.fillColor = color.toHexString()
-                                            
+
                                             layer.getData().map(f => {
                                                 f.setFillOpacity && f.setFillOpacity(color.metaColor.a)
                                             })
@@ -224,27 +290,46 @@ export default function ODview() {
                                         }} />
                                     }
                                 },
-                                 {
+                                {
                                     title: '操作',
                                     key: 'action',
                                     render: (text, record) => (
                                         <span>
-                                            <a onClick={() => {
+                                            <Button type="text" size="small" onClick={() => {
                                                 const layer = customlayers.filter(item => item.layerName == record.layerName)[0]
-                                                layer && map.removeGeoJSONLayer(layer)
-                                                removeCustomLayers_redux(record.layerName)
-                                                setTooltip_redux({
-                                                    x: 0,
-                                                    y: 0,
-                                                    show: false,
-                                                    info: {}
-                                                })
-                                            }}>删除</a>
+                                                layer.setVisible(!layer.visible)
+                                            }}
+                                            >
+                                                {customlayers.filter(item => item.layerName == record.layerName)[0].visible ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                                            </Button>
+                                            <Button type="text" size="small" onClick={() => {
+                                                const layer = customlayers.filter(item => item.layerName == record.layerName)[0]
+                                                const geojsonfile = obj2geojson(layer.getData())
+                                                downloadFile(geojsonfile,
+                                                    'Edited_' + record.layerName)
+                                            }}>
+                                                <DownloadOutlined />
+                                            </Button>
+
+                                            <Button type="text" size="small"
+                                                onClick={() => {
+                                                    const layer = customlayers.filter(item => item.layerName == record.layerName)[0]
+                                                    layer && map.removeGeoJSONLayer(layer)
+                                                    removeCustomLayers_redux(record.layerName)
+                                                    setTooltip_redux({
+                                                        x: 0,
+                                                        y: 0,
+                                                        show: false,
+                                                        info: {}
+                                                    })
+                                                }}>
+                                                <DeleteFilled />
+                                            </Button>
                                         </span>
                                     ),
                                 }
                             ]}
-                                
+
                                 dataSource={customlayers.map((layer, index) => {
                                     return {
                                         layerName: layer.layerName,

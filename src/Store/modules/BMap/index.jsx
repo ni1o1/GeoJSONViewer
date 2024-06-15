@@ -11,6 +11,12 @@ const bmapStore = createSlice({
       show:false,
       info:{}
     },
+    geojson_edit_tooltip:{
+      x:'0',
+      y:'0',
+      show:false,
+      editItem:null
+    },
     currentcoords:{
       bd09coord:[0,0],
       gcj02coord:[0,0],
@@ -32,11 +38,14 @@ const bmapStore = createSlice({
     },
     setCurrentCoords(state, action) {
       state.currentcoords = action.payload
+    },
+    setGeojsonEditTooltip(state, action) {
+      state.geojson_edit_tooltip = action.payload
     }
   }
 })
-const { setMap,addCustomLayers,removeCustomLayers,setTooltip,setCurrentCoords } = bmapStore.actions
-export { setMap,addCustomLayers,removeCustomLayers,setTooltip,setCurrentCoords }
+const { setMap,addCustomLayers,removeCustomLayers,setTooltip,setCurrentCoords,setGeojsonEditTooltip } = bmapStore.actions
+export { setMap,addCustomLayers,removeCustomLayers,setTooltip,setCurrentCoords,setGeojsonEditTooltip }
 
 const reducer = bmapStore.reducer
 export default reducer

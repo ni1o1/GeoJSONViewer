@@ -3,15 +3,16 @@ import { Map, Marker, NavigationControl, InfoWindow } from 'react-bmapgl';
 import { useDispatch, useSelector } from 'react-redux';
 import { setMap } from '../../Store/modules/BMap';
 import './index.css';
-import { setCurrentCoords } from '../../Store/modules/BMap';
-import { bd09towgs84 } from './coordtransform';
+import { setCurrentCoords, setGeojsonEditTooltip } from '../../Store/modules/BMap';
+import { bd09towgs84 } from '@/utils/coordtransform';
 import axios from 'axios';
+import { Button, Switch } from 'antd';
 const BMapGL = window.BMapGL;
 
 function App() {
 
   //redux
-  const { tooltip, currentcoords } = useSelector((state) => state.BMap);
+  const { tooltip, currentcoords, geojson_edit_tooltip } = useSelector((state) => state.BMap);
 
   const dispatch = useDispatch();
 
@@ -23,7 +24,9 @@ function App() {
     dispatch(setCurrentCoords(data));
   }
 
-
+  const setGeojsonEditTooltip_redux = (data) => {
+    dispatch(setGeojsonEditTooltip(data));
+  }
   useEffect(() => {
     const map = new BMapGL.Map("allmap", { enableIconClick: true });    // 创建Map实例
     map.centerAndZoom(new BMapGL.Point(116.280190, 40.049191), 12);  // 初始化地图,设置中心点坐标和地图级别
@@ -63,7 +66,13 @@ function App() {
       }
     }
     map.addEventListener('click', e => {
-
+      //关闭之前的提示框
+      setGeojsonEditTooltip_redux({
+        x: 0,
+        y: 0,
+        show: false,
+        editItem: null
+      })
       clickPoint = e.latlng;
       const point = e.point;
       const itemId = map.getIconByClickPosition(e);
@@ -74,6 +83,7 @@ function App() {
         script.setAttribute('src', url);
         document.getElementsByTagName('head')[0].appendChild(script);
       }
+
     });
     setMap1(map)
 
@@ -99,14 +109,14 @@ function App() {
         zIndex: 0
       }} />
 
-      <div className='tooltip' style={{
+      <div className='tooltip' id='coords_tooltip' style={{
         left: '45px',
         bottom: '42px',
         position: 'absolute',
         display: 'block',
         zIndex: 999,
       }}>
-        <div className='tooltip-title'>
+        <div className='tooltip-title' >
           坐标
         </div>
         <div className='tooltip-content'>
@@ -115,7 +125,7 @@ function App() {
           <div> <span className='tooltip-key'>BD09:</span>{currentcoords.bd09coord[0].toFixed(6)},{currentcoords.bd09coord[1].toFixed(6)}</div>
         </div>
       </div>
-      <div className='tooltip' style={{
+      <div className='tooltip' id='geojson_item_tooltip' style={{
         left: tooltip.x,
         top: tooltip.y,
         position: 'absolute',
@@ -130,6 +140,30 @@ function App() {
             return <div key={index}>
               <span className='tooltip-key'>{key}:</span>{tooltip.info[key]}</div>
           })}
+        </div>
+      </div>
+      <div className='tooltip' id='geojson_edit_tooltip' style={{
+        left: geojson_edit_tooltip.x,
+        top: geojson_edit_tooltip.y,
+        position: 'absolute',
+        display: geojson_edit_tooltip.show ? 'block' : 'none',
+        zIndex: 999,
+      }}>
+        <div className='tooltip-title'>
+          编辑模式
+        </div>
+        <div className='tooltip-content'>
+          <Switch checkedChildren="开"
+            unCheckedChildren="关"
+            defaultChecked={geojson_edit_tooltip.editItem && geojson_edit_tooltip.editItem._config.enableEditing}
+            onChange={(checked) => {
+              if (checked) {
+                geojson_edit_tooltip.editItem.enableEditing()
+              } else {
+                geojson_edit_tooltip.editItem.disableEditing()
+              }
+            }}
+          />
         </div>
       </div>
     </div>
