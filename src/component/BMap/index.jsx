@@ -150,10 +150,7 @@ function App() {
         zIndex: 999,
       }}>
         <div className='tooltip-title'>
-          编辑模式
-        </div>
-        <div className='tooltip-content'>
-          <Switch checkedChildren="开"
+          编辑模式<Switch checkedChildren="开"
             unCheckedChildren="关"
             defaultChecked={geojson_edit_tooltip.editItem && geojson_edit_tooltip.editItem._config.enableEditing}
             onChange={(checked) => {
@@ -164,6 +161,11 @@ function App() {
               }
             }}
           />
+        </div>
+        <div className='tooltip-content'>
+          点击空心点增加节点<br />
+          拖动实心点编辑节点<br />
+          右键实心点删除节点
         </div>
       </div>
     </div>
