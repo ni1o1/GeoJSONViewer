@@ -10,6 +10,9 @@ import {
 
   MenuUnfoldOutlined, MenuFoldOutlined, NodeIndexOutlined
 } from '@ant-design/icons';
+import Draggable, { DraggableCore } from "react-draggable";
+import { Resizable } from 'react-resizable';
+
 import './index.css';
 import { darkStyle, snowStyle } from './style.js';
 const { TabPane } = Tabs;
@@ -48,7 +51,7 @@ export default function Panelpage() {
       {React.createElement(collapsedmenu ? MenuUnfoldOutlined : MenuFoldOutlined)}
     </Button>
   </Sider>)
-  const onItemShowChange = (itemType,checked) => {
+  const onItemShowChange = (itemType, checked) => {
     map.setDisplayOptions({
       [itemType]: checked
     })
@@ -67,13 +70,13 @@ export default function Panelpage() {
       ]
     },
     {
-      key: 'showPOI', label: <>POI文字  <Switch defaultChecked onChange={(checked)=>{onItemShowChange('poiText',checked)}} /></>,children:[]
+      key: 'showPOI', label: <>POI文字  <Switch defaultChecked onChange={(checked) => { onItemShowChange('poiText', checked) }} /></>, children: []
     },
     {
-      key: 'showPOIicon', label: <>POIicon  <Switch defaultChecked onChange={(checked)=>{onItemShowChange('poiIcon',checked)}} /></>,children:[]
+      key: 'showPOIicon', label: <>POIicon  <Switch defaultChecked onChange={(checked) => { onItemShowChange('poiIcon', checked) }} /></>, children: []
     },
     {
-      key: 'showBuilding', label: <>3D建筑物  <Switch defaultChecked onChange={(checked)=>{onItemShowChange('building',checked)}} /></>,children:[]
+      key: 'showBuilding', label: <>3D建筑物  <Switch defaultChecked onChange={(checked) => { onItemShowChange('building', checked) }} /></>, children: []
     },
 
   ]
@@ -123,48 +126,74 @@ export default function Panelpage() {
 
   const [collapsedpanel, setcollapsedpanel] = useState(true)
 
+
+  const [state, setState] = useState({
+    width: '43vw',
+    height: '200px',
+  });
   return (
-    <Sider
-      width={collapsedpanel ? '45%' : '50px'}
-      className="panel"
+    <Draggable
+      handle=".drag-handler"
+      defaultPosition={{ x: 0, y: 0 }}
+      position={null}
+
+      scale={1}
     >
-      <Layout>
-        {collapsedpanel ? <PageHeader
-          className="site-page-header"
-          key="site-page-header"
-          title="GeoJSON Viewer"
-          subTitle=''
-          avatar={{ src: 'images/logodark_3durbanmob.png', shape: 'square' }}
-          extra={[
-            <div key='settings1'>
-              <Dropdown key='settings' menu={{
-                items: mapstylemenu,
-                onClick: handleMenuClick,
-              }}>
-                <Button key='Settingbuttom' type="text" >
-                  <SettingOutlined />
-                </Button>
-              </Dropdown>
-              <Button key='navicollapsed' type="text" onClick={() => { setcollapsedpanel(!collapsedpanel) }}>
-                {React.createElement(collapsedpanel ? UpOutlined : DownOutlined)}
-              </Button>
-            </div>
-          ]}
-        /> : <Button key='navicollapsed' type="text" onClick={() => { setcollapsedpanel(!collapsedpanel) }}>
-          {React.createElement(collapsedpanel ? UpOutlined : DownOutlined)}
-        </Button>}
-        <div style={collapsedpanel ? {} : { height: '0px', overflowY: 'hidden' }}>
+      <div>
+        <div className='drag-handler' style={{
+          position: 'absolute',
+          //背景颜色
+          backgroundColor: 'rgba(0,0,0,0)',
+          //边框
+          width: collapsedpanel ?'80%':'0vw',
+          height: '50px',
+          top: '0px',
+          zIndex:999,
+        }} />
+        <Sider
+          width={collapsedpanel ? '100%' : '50px'}
+          className="panel"
+        >
           <Layout>
-            <Content>
-              <Tabs tabPosition="left" size='small' renderTabBar={(a, b) => cardmenu} activeKey={activepage}>
-                <TabPane key="GeoJSONview" >
-                  <GeoJSONview />
-                </TabPane>
-              </Tabs>
-            </Content>
+            {collapsedpanel ? <PageHeader
+              className="site-page-header"
+              key="site-page-header"
+              title="GeoJSON Viewer"
+              subTitle=''
+              avatar={{ src: 'images/logodark_3durbanmob.png', shape: 'square' }}
+              extra={[
+                <div key='settings1'>
+                  <Dropdown key='settings' menu={{
+                    items: mapstylemenu,
+                    onClick: handleMenuClick,
+                  }}>
+                    <Button key='Settingbuttom' type="text" >
+                      <SettingOutlined />
+                    </Button>
+                  </Dropdown>
+                  <Button key='navicollapsed' type="text" onClick={() => { setcollapsedpanel(!collapsedpanel) }}>
+                    {React.createElement(collapsedpanel ? UpOutlined : DownOutlined)}
+                  </Button>
+                </div>
+              ]}
+            /> : <Button key='navicollapsed' type="text" onClick={() => { setcollapsedpanel(!collapsedpanel) }}>
+              {React.createElement(collapsedpanel ? UpOutlined : DownOutlined)}
+            </Button>}
+            <div style={collapsedpanel ? {} : { height: '0px', overflowY: 'hidden' }}>
+              <Layout>
+                <Content>
+                  <Tabs tabPosition="left" size='small' renderTabBar={(a, b) => cardmenu} activeKey={activepage}>
+                    <TabPane key="GeoJSONview" >
+                      <GeoJSONview />
+                    </TabPane>
+                  </Tabs>
+                </Content>
+              </Layout>
+            </div>
           </Layout>
-        </div>
-      </Layout>
-    </Sider>
+        </Sider>
+      </div>
+
+    </Draggable>
   )
 }

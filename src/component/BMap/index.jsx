@@ -7,6 +7,7 @@ import { setCurrentCoords, setGeojsonEditTooltip } from '../../Store/modules/BMa
 import { bd09towgs84 } from '@/utils/coordtransform';
 import axios from 'axios';
 import { Button, Switch } from 'antd';
+
 const BMapGL = window.BMapGL;
 
 function App() {
@@ -90,15 +91,9 @@ function App() {
   }, []);
 
   return (
-    <div style={{
-      width: "100%",
-      height: "100%",
-      overflow: 'hidden',
-      position: 'absolute',
-      top: 0,
-      display: 'flex',
-      zIndex: 0
-    }}>
+
+
+    <>
       <div id="allmap" style={{
         width: "100%",
         height: "100%",
@@ -106,8 +101,9 @@ function App() {
         position: 'absolute',
         top: 0,
         display: 'flex',
-        zIndex: 0
+        zIndex:0
       }} />
+
 
       <div className='tooltip' id='coords_tooltip' style={{
         left: '45px',
@@ -168,7 +164,7 @@ function App() {
           右键实心点删除节点
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
