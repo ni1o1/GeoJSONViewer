@@ -163,7 +163,7 @@ function App() {
           />
         </div>
         <div className='tooltip-content'>
-          点击空心点增加节点<br />
+          拖动空心点增加节点<br />
           拖动实心点编辑节点<br />
           右键实心点删除节点
         </div>

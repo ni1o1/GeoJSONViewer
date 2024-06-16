@@ -30,7 +30,6 @@ export default function ODview() {
     const setGeojsonEditTooltip_redux = (data) => {
         dispatch(setGeojsonEditTooltip(data));
     }
-    var colorBand = ['darkolivegreen', 'cadetblue', 'orange', 'red', 'tan'];
 
     const handleupload_geojson = (file) => {
         message.loading({ content: '读取数据中', key: 'readcsv', duration: 0 })
@@ -42,29 +41,36 @@ export default function ODview() {
                 if (file.name.slice(-4) == 'json') {
                     const jsondata = JSON.parse(data)
                     //geojson图层
+
+                    const defaultfillColor='#93C2FD'
+                    const defaultstrokeColor='#0273FF'
+                    const defaultfillOpacity=0.7
+                    const defaultstrokeOpacity=0.7
+                    const defaultstrokeWeight=2
+
                     const jsondataLayer = new BMapGL.GeoJSONLayer(file.name, {
                         reference: 'WGS84',
                         dataSource: jsondata,         // 数据
-                        opacity: 0.8,               // 图层透明度
+                        opacity: defaultfillOpacity,               // 图层透明度
                         level: -10,                // 显示层级，由于系统内部问题，GeoJSONLayer图层等级使用负数表达，负数越大层级越高，默认-99
                         minZoom: 1,               // 设置图层显示的地图最小等级
                         maxZoom: 30,                // 设置图层显示的地图最大等级
                         polylineStyle: function (properties) {
                             return {
-                                fillColor: 'darkolivegreen',
-                                fillOpacity: 0.8,
-                                strokeColor: 'black',
-                                strokeOpacity: 0.8,
-                                strokeWeight: 2
+                                fillColor: defaultfillColor,
+                                fillOpacity: defaultfillOpacity,
+                                strokeColor: defaultstrokeColor,
+                                strokeOpacity: defaultfillOpacity,
+                                strokeWeight: defaultstrokeWeight
                             }
                         },
                         polygonStyle: function (properties) {
                             return {
-                                fillColor: 'darkolivegreen',
-                                fillOpacity: 0.8,
-                                strokeColor: 'black',
-                                strokeOpacity: 0.8,
-                                strokeWeight: 2
+                                fillColor: defaultfillColor,
+                                fillOpacity: defaultfillOpacity,
+                                strokeColor: defaultstrokeColor,
+                                strokeOpacity: defaultfillOpacity,
+                                strokeWeight: defaultstrokeWeight
                             }
                         },
                         markerStyle: function (properties) {
@@ -73,11 +79,13 @@ export default function ODview() {
                             }
                         },
                     });
-                    jsondataLayer.strokeColor = 'black'
-                    jsondataLayer.fillColor = 'darkolivegreen'
-                    jsondataLayer.fillOpacity = 0.8
-                    jsondataLayer.strokeOpacity = 0.8
-                    jsondataLayer.strokeWeight = 2
+
+
+                    jsondataLayer.strokeColor = defaultstrokeColor
+                    jsondataLayer.fillColor = defaultfillColor
+                    jsondataLayer.fillOpacity = defaultfillOpacity
+                    jsondataLayer.strokeOpacity = defaultstrokeOpacity
+                    jsondataLayer.strokeWeight = defaultstrokeWeight
 
                     jsondataLayer.addEventListener('mousemove', function (e) {
                         if (e.features.length == 0) {
@@ -92,7 +100,7 @@ export default function ODview() {
                             // 获取要素
                             const feature = e.features[0];
                             // 高亮要素
-                            feature.setFillColor && feature.setFillColor('red')
+                            //feature.setFillColor && feature.setFillColor('red')
                             feature.setStrokeColor && feature.setStrokeColor('red')
                             setTooltip_redux({
                                 title: file.name,
@@ -196,10 +204,8 @@ export default function ODview() {
     return (
         <>
             <Col span={24}>
-                <Card title="Data" extra={<Tooltip title='Import OD data to show flow map'><InfoCircleOutlined /></Tooltip>}
+                <Card title="GeoJSON Viewer" 
                     bordered={false}>
-                    <Collapse defaultActiveKey={['ImportData', 'Layers']}>
-                        <Panel header="导入GeoJSON数据" key="ImportData">
 
                             <Dragger maxCount={1} beforeUpload={handleupload_geojson} >
                                 <p className="ant-upload-drag-icon">
@@ -210,9 +216,8 @@ export default function ODview() {
                                     数据默认使用WGS84坐标系
                                 </p>
                             </Dragger>
-                        </Panel>
-                        <Panel header="图层管理" key="Layers" style={{ overflowY: 'scroll' }}>
-                            <Table size='small' columns={[
+                            <br />
+                            {customlayers.length>0 && <Table size='small' columns={[
                                 {
                                     title: '文件',
                                     dataIndex: 'layerName',
@@ -338,8 +343,7 @@ export default function ODview() {
                                     }
                                 }).sort((a, b) => a.level - b.level)
                                 } />
-                        </Panel>
-                    </Collapse>
+                                }
                 </Card>
             </Col>
         </>
