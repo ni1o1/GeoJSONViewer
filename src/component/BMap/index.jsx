@@ -1,15 +1,14 @@
 import React, { useEffect } from 'react'
-import { Map, Marker, NavigationControl, InfoWindow } from 'react-bmapgl';
 import { useDispatch, useSelector } from 'react-redux';
-import { setMap } from '../../Store/modules/BMap';
+import { setMap, setView } from '../../Store/modules/BMap';
 import './index.css';
 import { setCurrentCoords, setGeojsonEditTooltip } from '../../Store/modules/BMap';
-import { bd09towgs84 } from '@/utils/coordtransform';
+import { bd09towgs84_all } from '@/utils/coordtransform';
 import axios from 'axios';
 import { Button, Switch } from 'antd';
 
 const BMapGL = window.BMapGL;
-
+const mapvgl = window.mapvgl;
 function App() {
 
   //redux
@@ -17,10 +16,12 @@ function App() {
 
   const dispatch = useDispatch();
 
-  const setMap1 = (map) => {
+  const setMap_redux = (map) => {
     dispatch(setMap(map));
   }
-
+  const setView_redux = (view) => {
+    dispatch(setView(view));
+  }
   const setCurrentCoords_redux = (data) => {
     dispatch(setCurrentCoords(data));
   }
@@ -30,6 +31,11 @@ function App() {
   }
   useEffect(() => {
     const map = new BMapGL.Map("allmap", { enableIconClick: true });    // 创建Map实例
+    // 2. 创建MapVGL图层管理器
+    const view = new mapvgl.View({
+      map: map
+    });
+    
     map.centerAndZoom(new BMapGL.Point(116.280190, 40.049191), 12);  // 初始化地图,设置中心点坐标和地图级别
     map.enableScrollWheelZoom(true);     //开启鼠标滚轮缩放
     map.setHeading(0);
@@ -45,7 +51,7 @@ function App() {
     map.addControl(locationCtrl);
 
     map.addEventListener('mousemove', function (e) {
-      setCurrentCoords_redux(bd09towgs84(e.latlng.lng, e.latlng.lat))
+      setCurrentCoords_redux(bd09towgs84_all(e.latlng.lng, e.latlng.lat))
     })
 
     // 地图选poi展示提示框
@@ -86,8 +92,8 @@ function App() {
       }
 
     });
-    setMap1(map)
-
+    setMap_redux(map)
+    setView_redux(view)
   }, []);
 
   return (
@@ -101,7 +107,7 @@ function App() {
         position: 'absolute',
         top: 0,
         display: 'flex',
-        zIndex:0
+        zIndex: 0
       }} />
 
 

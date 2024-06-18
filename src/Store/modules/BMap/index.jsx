@@ -4,6 +4,7 @@ const bmapStore = createSlice({
   name: 'BMap',
   initialState: {
     map: null,
+    view: null,
     customlayers:[],
     tooltip:{
       x:'0',
@@ -27,6 +28,9 @@ const bmapStore = createSlice({
     setMap(state, action) {
       state.map = action.payload;
     },
+    setView(state, action) {
+      state.view = action.payload;
+    },
     addCustomLayers(state, action) {
       state.customlayers = [...state.customlayers, action.payload]
     },
@@ -44,8 +48,8 @@ const bmapStore = createSlice({
     }
   }
 })
-const { setMap,addCustomLayers,removeCustomLayers,setTooltip,setCurrentCoords,setGeojsonEditTooltip } = bmapStore.actions
-export { setMap,addCustomLayers,removeCustomLayers,setTooltip,setCurrentCoords,setGeojsonEditTooltip }
+const { setMap,addCustomLayers,removeCustomLayers,setTooltip,setCurrentCoords,setGeojsonEditTooltip,setView } = bmapStore.actions
+export { setMap,addCustomLayers,removeCustomLayers,setTooltip,setCurrentCoords,setGeojsonEditTooltip,setView }
 
 const reducer = bmapStore.reducer
 export default reducer

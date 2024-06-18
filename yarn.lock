@@ -8331,11 +8331,6 @@ makeerror@1.0.12:
   dependencies:
     tmpl "1.0.5"
 
-mapvgl@^1.0.0-beta.189:
-  version "1.0.0-beta.191"
-  resolved "https://registry.npmmirror.com/mapvgl/-/mapvgl-1.0.0-beta.191.tgz#3e77a834ffcf44385512390ecd0b484b267dd2ba"
-  integrity sha512-kbcLSXPSZybMgvJ0RTPEpISC6hpc27P/UwYCFASKLRe6Z7LC0Z11FwNXvQT/jkAK/LdBm2GqsE9i+GQViqRIYg==
-
 marchingsquares@^1.3.3:
   version "1.3.3"
   resolved "https://registry.npmmirror.com/marchingsquares/-/marchingsquares-1.3.3.tgz#67404af4b883ade3a589221f4e9dd010a1f706fc"
@@ -10126,14 +10121,6 @@ react-app-rewired@^2.2.1:
   dependencies:
     semver "^5.6.0"
 
-react-bmapgl@^0.2.27:
-  version "0.2.27"
-  resolved "https://registry.npmmirror.com/react-bmapgl/-/react-bmapgl-0.2.27.tgz#af6df3ab83d1c200cbad1e6e37e6c49afbf60563"
-  integrity sha512-pCVAuYFwG0rU9j1u9sZ4IWNmUP84pFa5y8nq/lxjzMiQdl04iO39NkTdEg2YRLjF2NF11eigcal/Ne1+zPz4ng==
-  dependencies:
-    mapvgl "^1.0.0-beta.189"
-    shallowequal "^1.1.0"
-
 react-countup@^6.5.3:
   version "6.5.3"
   resolved "https://registry.yarnpkg.com/react-countup/-/react-countup-6.5.3.tgz#e892aa3eab2d6ba9c3cdba30bf4ed6764826d848"
@@ -10805,11 +10792,6 @@ setprototypeof@1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/setprototypeof/-/setprototypeof-1.2.0.tgz#66c9a24a73f9fc28cbe66b09fed3d33dcaf1b424"
   integrity sha512-E5LDX7Wrp85Kil5bhZv46j8jOeboKq5JMmYM3gVGdGH8xFpPWXUMsNrlODCrkoxMEeNi/XZIwuRvY4XNwYMJpw==
-
-shallowequal@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.npmmirror.com/shallowequal/-/shallowequal-1.1.0.tgz#188d521de95b9087404fd4dcb68b13df0ae4e7f8"
-  integrity sha512-y0m1JoUZSlPAjXVtPPW70aZWfIL/dSP7AFkRnniLCrK/8MDKog3TySTBmckD+RObVxH0v4Tox67+F14PdED2oQ==
 
 shebang-command@^2.0.0:
   version "2.0.0"
