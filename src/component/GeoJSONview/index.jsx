@@ -42,56 +42,123 @@ export default function ODview() {
                 if (file.name.slice(-4) == 'json') {
 
                     const jsondata = JSON.parse(data)
+                    //检查文件大小
+
                     //geojson图类型
                     const geometry_type = jsondata.features[0].geometry.type
-
                     const defaultfillColor = '#93C2FD'
                     const defaultstrokeColor = '#0273FF'
                     const defaultfillOpacity = 0.7
                     const defaultstrokeOpacity = 0.7
                     const defaultstrokeWeight = 2
 
-                    if (geometry_type == 'Point') {
+                    if ((geometry_type == 'Point') || ((geometry_type == 'LineString') && (jsondata.features.length > 1000))
+                        || ((geometry_type == 'Polygon') && (jsondata.features.length > 1000))
+                    ) {
                         //转坐标为bd09
                         const jsondata_bd09 = convert_geojson(jsondata, wgs84tobd09)
-                        // 3. 创建可视化图层，并添加到图层管理器中
-                        const jsondataLayer = new mapvgl.PointLayer({
-                            color: defaultstrokeColor,
-                            blend: 'lighter',
-                            size: 10,
-                            selectedIndex: -1, // 选中数据项索引
-                            selectedColor: '#ff0000', // 选中项颜色
-                            enablePicked: true, // 是否可以拾取
-                            autoSelect: true, // 根据鼠标位置来自动设置选中项
-                            onClick: e => {
-                                // 点击事件
-                                console.log('click', e);
-                            },
-                            onMousemove: e => {
-                                if (e.dataIndex != -1) {
-                                    setTooltip_redux({
-                                        title: file.name,
-                                        x: window.event.clientX,
-                                        y: window.event.clientY,
-                                        show: true,
-                                        info: e.dataItem.properties
-                                    })
-                                } else {
-                                    setTooltip_redux({
-                                        title: file.name,
-                                        x: 0,
-                                        y: 0,
-                                        show: false,
-                                        info: {}
-                                    })
+
+                        let jsondataLayer
+                        if (geometry_type == 'Point') {
+                            // 3. 创建可视化图层，并添加到图层管理器中
+                            jsondataLayer = new mapvgl.PointLayer({
+                                color: defaultstrokeColor,
+                                blend: 'lighter',
+                                size: 10,
+                                selectedIndex: -1, // 选中数据项索引
+                                selectedColor: '#ff0000', // 选中项颜色
+                                enablePicked: true, // 是否可以拾取
+                                autoSelect: true, // 根据鼠标位置来自动设置选中项
+                                onMousemove: e => {
+                                    if (e.dataIndex != -1) {
+                                        setTooltip_redux({
+                                            title: file.name,
+                                            x: window.event.clientX,
+                                            y: window.event.clientY,
+                                            show: true,
+                                            info: e.dataItem.properties
+                                        })
+                                    } else {
+                                        setTooltip_redux({
+                                            title: file.name,
+                                            x: 0,
+                                            y: 0,
+                                            show: false,
+                                            info: {}
+                                        })
+                                    }
                                 }
-                            }
-                        });
+                            });
+                            jsondataLayer.geoType = 'Point'
+                        } else if (geometry_type == 'LineString') {
+                            jsondataLayer = new mapvgl.LineLayer({
+                                color: defaultstrokeColor,
+                                blend: 'lighter',
+                                width: 2,
+                                selectedIndex: -1, // 选中数据项索引
+                                selectedColor: '#ff0000', // 选中项颜色
+                                enablePicked: true, // 是否可以拾取
+                                autoSelect: true, // 根据鼠标位置来自动设置选中项
+                                onMousemove: e => {
+                                    if (e.dataIndex != -1) {
+                                        setTooltip_redux({
+                                            title: file.name,
+                                            x: window.event.clientX,
+                                            y: window.event.clientY,
+                                            show: true,
+                                            info: e.dataItem.properties
+                                        })
+                                    } else {
+                                        setTooltip_redux({
+                                            title: file.name,
+                                            x: 0,
+                                            y: 0,
+                                            show: false,
+                                            info: {}
+                                        })
+                                    }
+                                }
+                            });
+                            jsondataLayer.geoType = 'LineString'
+                        } else if (geometry_type == 'Polygon') {
+
+                            jsondataLayer = new mapvgl.PolygonLayer({
+                                lineColor: defaultstrokeColor,
+                                lineWidth: 2,
+                                fillColor: defaultfillColor,
+                                blend: 'lighter',
+                                selectedIndex: -1, // 选中数据项索引
+                                selectedColor: '#ff0000', // 选中项颜色
+                                enablePicked: true, // 是否可以拾取
+                                autoSelect: true, // 根据鼠标位置来自动设置选中项
+                                onMousemove: e => {
+                                    if (e.dataIndex != -1) {
+                                        setTooltip_redux({
+                                            title: file.name,
+                                            x: window.event.clientX,
+                                            y: window.event.clientY,
+                                            show: true,
+                                            info: e.dataItem.properties
+                                        })
+                                    } else {
+                                        setTooltip_redux({
+                                            title: file.name,
+                                            x: 0,
+                                            y: 0,
+                                            show: false,
+                                            info: {}
+                                        })
+                                    }
+                                }
+                            });
+                            jsondataLayer.geoType = 'Polygon'
+                        }
                         jsondataLayer.layerName = file.name
                         jsondataLayer.layerType = 'mapvgl'
                         jsondataLayer.overlayData = jsondata_bd09.features
                         jsondataLayer.strokeColor = defaultstrokeColor
                         jsondataLayer.fillOpacity = defaultfillOpacity
+                        jsondataLayer.fillColor = defaultfillColor 
                         jsondataLayer.strokeOpacity = defaultstrokeOpacity
                         jsondataLayer.strokeWeight = defaultstrokeWeight
                         jsondataLayer.visible = true
@@ -310,9 +377,19 @@ export default function ODview() {
                                     onChange={(value) => {
 
                                         if (layer.layerType == 'mapvgl') {
-                                            layer.setOptions({
-                                                size: value
-                                            })
+                                            if (layer.geoType == 'Point') {
+                                                layer.setOptions({
+                                                    size: value
+                                                })
+                                            } else if (layer.geoType == 'LineString') {
+                                                layer.setOptions({
+                                                    width: value
+                                                })
+                                            } else if (layer.geoType == 'Polygon') {
+                                                layer.setOptions({
+                                                    lineWidth: value
+                                                })
+                                            }
                                         } else {
                                             layer.getData().map(f => {
                                                 f.setStrokeWeight && f.setStrokeWeight(value)
@@ -330,9 +407,15 @@ export default function ODview() {
                                 const layer = customlayers.filter(item => item.layerName == record.layerName)[0]
                                 return <ColorPicker defaultValue={layer.strokeColor} onChange={(color) => {
                                     if (layer.layerType == 'mapvgl') {
-                                        layer.setOptions({
-                                            color: color.toHexString()
-                                        })
+                                        if ((layer.geoType == 'Point') | (layer.geoType == 'LineString')) {
+                                            layer.setOptions({
+                                                color: color.toHexString()
+                                            })
+                                        } else if (layer.geoType == 'Polygon') {
+                                            layer.setOptions({
+                                                lineColor: color.toHexString()
+                                            })
+                                        }
                                     } else {
 
 
@@ -347,7 +430,8 @@ export default function ODview() {
                                         layer.strokeOpacity = color.metaColor.a
 
                                     }
-                                }} />
+                                }
+                                } />
                             }
                         },
                         {
@@ -356,15 +440,23 @@ export default function ODview() {
                             render: (text, record) => {
                                 const layer = customlayers.filter(item => item.layerName == record.layerName)[0]
                                 return <ColorPicker defaultValue={layer.fillColor} onChange={(color) => {
-                                    layer.getData().map(f => {
-                                        f.setFillColor && f.setFillColor(color.toHexString())
-                                    })
-                                    layer.fillColor = color.toHexString()
+                                    if (layer.layerType == 'mapvgl') {
+                                        if (layer.geoType == 'Polygon') {
+                                            layer.setOptions({
+                                                fillColor: color.toHexString()
+                                            })
+                                        }
+                                    } else {
+                                        layer.getData().map(f => {
+                                            f.setFillColor && f.setFillColor(color.toHexString())
+                                        })
+                                        layer.fillColor = color.toHexString()
 
-                                    layer.getData().map(f => {
-                                        f.setFillOpacity && f.setFillOpacity(color.metaColor.a)
-                                    })
-                                    layer.fillOpacity = color.metaColor.a
+                                        layer.getData().map(f => {
+                                            f.setFillOpacity && f.setFillOpacity(color.metaColor.a)
+                                        })
+                                        layer.fillOpacity = color.metaColor.a
+                                    }
                                 }} />
                             }
                         },
