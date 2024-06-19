@@ -23,3 +23,7 @@
 .tooltip-content {
     margin-top: 5px;
 }
+
+.tangram-suggestion {
+    z-index: 9999;
+}

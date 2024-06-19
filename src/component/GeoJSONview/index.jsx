@@ -158,7 +158,7 @@ export default function ODview() {
                         jsondataLayer.overlayData = jsondata_bd09.features
                         jsondataLayer.strokeColor = defaultstrokeColor
                         jsondataLayer.fillOpacity = defaultfillOpacity
-                        jsondataLayer.fillColor = defaultfillColor 
+                        jsondataLayer.fillColor = defaultfillColor
                         jsondataLayer.strokeOpacity = defaultstrokeOpacity
                         jsondataLayer.strokeWeight = defaultstrokeWeight
                         jsondataLayer.visible = true
@@ -362,7 +362,15 @@ export default function ODview() {
                                 <InputNumber min={0} max={10} defaultValue={text} size='small'
                                     style={{ width: '40px' }} onChange={(value) => {
                                         const layer = customlayers.filter(item => item.layerName == record.layerName)[0]
-                                        layer && layer.setLevel(value - 15)
+
+                                        if (layer.layerType == 'mapvgl') {
+                                            layer.setOptions({
+                                                renderOrder: value
+                                            })
+                                            console.log(layer.getOptions())
+                                        } else {
+                                            layer && layer.setLevel(value - 15)
+                                        }
                                     }} />
                             )
                         },
@@ -531,9 +539,9 @@ export default function ODview() {
                             return {
                                 layerName: layer.layerName,
                                 overlayData: layer.overlayData.length,
-                                level: layer.level + 15
+                                level: layer.level+15
                             }
-                        }).sort((a, b) => a.level - b.level)
+                        })
                         } />
                     }
                 </Card>

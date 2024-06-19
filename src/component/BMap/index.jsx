@@ -1,11 +1,11 @@
-import React, { useEffect } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { setMap, setView } from '../../Store/modules/BMap';
 import './index.css';
-import { setCurrentCoords, setGeojsonEditTooltip } from '../../Store/modules/BMap';
+import { setCurrentCoords, setTooltip, setGeojsonEditTooltip } from '../../Store/modules/BMap';
 import { bd09towgs84_all } from '@/utils/coordtransform';
 import axios from 'axios';
-import { Button, Switch } from 'antd';
+import { Button, Switch, AutoComplete, Input } from 'antd';
 
 const BMapGL = window.BMapGL;
 const mapvgl = window.mapvgl;
@@ -29,13 +29,18 @@ function App() {
   const setGeojsonEditTooltip_redux = (data) => {
     dispatch(setGeojsonEditTooltip(data));
   }
+  const setTooltip_redux = (data) => {
+    dispatch(setTooltip(data));
+  }
+
+  let markerOverlay = null
   useEffect(() => {
     const map = new BMapGL.Map("allmap", { enableIconClick: true });    // 创建Map实例
     // 2. 创建MapVGL图层管理器
     const view = new mapvgl.View({
       map: map
     });
-    
+
     map.centerAndZoom(new BMapGL.Point(116.280190, 40.049191), 12);  // 初始化地图,设置中心点坐标和地图级别
     map.enableScrollWheelZoom(true);     //开启鼠标滚轮缩放
     map.setHeading(0);
@@ -73,6 +78,7 @@ function App() {
       }
     }
     map.addEventListener('click', e => {
+
       //关闭之前的提示框
       setGeojsonEditTooltip_redux({
         x: 0,
@@ -94,7 +100,62 @@ function App() {
     });
     setMap_redux(map)
     setView_redux(view)
+
+    const local = new BMapGL.LocalSearch(map, { //智能搜索
+      onSearchComplete: () => {
+        const poiinfo = local.getResults().getPoi(0)
+        console.log(poiinfo)
+        var pp = poiinfo.point;    //获取第一个智能搜索的结果
+        map.centerAndZoom(pp, 18);
+        const marker = new BMapGL.Marker(pp)
+        marker.addEventListener('mouseout', function (e) {
+          setTooltip_redux({
+            title: '',
+            x: 0,
+            y: 0,
+            show: false,
+            info: {}
+          })
+        })
+        marker.addEventListener('mouseover', function (e) {
+          setTooltip_redux({
+            title: poiinfo.title,
+            x: e.pixel.x,
+            y: e.pixel.y,
+            show: true,
+            info: {
+              '城市': poiinfo.city,
+              '电话': poiinfo.phoneNumber,
+              '邮编': poiinfo.postcode,
+              '地址': poiinfo.address,
+              '标签': poiinfo.tags.join(),
+            }
+          })
+        })
+        map.addOverlay(marker);    //添加标注
+        markerOverlay = marker
+      }
+    });
+
+    var ac = new BMapGL.Autocomplete(    //建立一个自动完成的对象
+      {
+        "input": "suggestId"
+        , "location": map
+      });
+    ac.addEventListener("onconfirm", function (e) {    //鼠标点击下拉列表后的事件
+      const _value = e.item.value;
+      const myValue = _value.province + _value.city + _value.district + _value.street + _value.business;
+      setSearchValue(myValue)
+      if (markerOverlay) {
+        map.removeOverlay(markerOverlay)
+      }
+      local.search(myValue);
+    });
   }, []);
+
+
+  //地点检索
+  const [searchValue, setSearchValue] = useState([]);
 
   return (
 
@@ -110,6 +171,21 @@ function App() {
         zIndex: 0
       }} />
 
+      <div className='tooltip' id='query_tooltip' style={{
+        left: '50%',
+        top: '5px',
+        position: 'absolute',
+        display: 'block',
+        zIndex: 999,
+      }}>
+        <div className='tooltip-title' >
+          <Input style={{ width: 400 }} value={searchValue} onChange={(value) => {
+            setSearchValue(value.target.value)
+          }}
+           
+            id="suggestId" size="large" placeholder="地点检索" enterButton />
+        </div>
+      </div>
 
       <div className='tooltip' id='coords_tooltip' style={{
         left: '45px',
