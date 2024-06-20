@@ -11,7 +11,6 @@ import {
   MenuUnfoldOutlined, MenuFoldOutlined, NodeIndexOutlined
 } from '@ant-design/icons';
 import Draggable, { DraggableCore } from "react-draggable";
-import { Resizable } from 'react-resizable';
 
 import './index.css';
 import { darkStyle, snowStyle } from './style.js';

@@ -1,0 +1,10 @@
+.compass {
+    position: absolute;
+    z-index: 9999;
+    color: #333;
+    padding: 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    margin: 10px;
+    display: none;
+}

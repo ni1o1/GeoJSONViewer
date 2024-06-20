@@ -8,6 +8,7 @@ import * as turf from '@turf/turf';
 import { addCustomLayers, removeCustomLayers, setTooltip, setGeojsonEditTooltip } from '../../Store/modules/BMap';
 import { downloadFile } from '@/utils/downloadFile';
 import { bd09towgs84, wgs84tobd09, bd09mctobd09, convert_geojson } from '@/utils/coordtransform';
+
 const { Dragger } = Upload;
 const { Panel } = Collapse;
 const BMapGL = window.BMapGL;
@@ -39,6 +40,9 @@ export default function ODview() {
             reader.readAsText(file)
             reader.onload = function (f) {
                 const data = f.target.result
+                if (file.name.slice(-3) == 'zip') {
+
+                } else
                 if (file.name.slice(-4) == 'json') {
 
                     const jsondata = JSON.parse(data)

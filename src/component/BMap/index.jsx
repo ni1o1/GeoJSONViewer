@@ -2,10 +2,11 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { setMap, setView } from '../../Store/modules/BMap';
 import './index.css';
-import { setCurrentCoords, setTooltip, setGeojsonEditTooltip } from '../../Store/modules/BMap';
+import { setCurrentCoords, setTooltip, setCompass, setGeojsonEditTooltip } from '../../Store/modules/BMap';
 import { bd09towgs84_all } from '@/utils/coordtransform';
 import axios from 'axios';
 import { Button, Switch, AutoComplete, Input } from 'antd';
+import Compass from '@@/Compass';
 
 const BMapGL = window.BMapGL;
 const mapvgl = window.mapvgl;
@@ -32,6 +33,9 @@ function App() {
   const setTooltip_redux = (data) => {
     dispatch(setTooltip(data));
   }
+  const setCompass_redux = (data) => {
+    dispatch(setCompass(data));
+  }
 
   let markerOverlay = null
   useEffect(() => {
@@ -56,6 +60,41 @@ function App() {
     map.addControl(locationCtrl);
 
     map.addEventListener('mousemove', function (e) {
+      const getpixel = (map,distance) => {
+        const center = map.getCenter();
+        const centerPoint = new BMapGL.Point(center.lng, center.lat);
+
+        // 计算中心点向东1公里的点
+        const kmInDegree = (distance/1000) / (111.32 * Math.cos(center.lat * Math.PI / 180)); // 经度上的1公里对应的度数
+        const eastPoint = new BMapGL.Point(center.lng + kmInDegree, center.lat);
+
+        // 将地理坐标转换为像素坐标
+        const centerPixel = map.pointToPixel(centerPoint);
+        const eastPixel = map.pointToPixel(eastPoint);
+
+        // 计算像素距离
+        const pixelDistance = Math.sqrt(Math.pow(eastPixel.x - centerPixel.x, 2) + Math.pow(eastPixel.y - centerPixel.y, 2));
+
+        return pixelDistance
+      }
+      let pixel_distance = getpixel(map,1000)
+      let unit = 'KM'
+      if ((100/pixel_distance).toFixed(0)==0){
+        pixel_distance = getpixel(map,100)
+        unit = 'M'
+        setCompass_redux({
+          width: pixel_distance * (100/pixel_distance).toFixed(0),
+          length: (100/pixel_distance).toFixed(0)*100,
+          unit
+        })
+      }else{
+        setCompass_redux({
+          width: pixel_distance * (100/pixel_distance).toFixed(0),
+          length: (100/pixel_distance).toFixed(0),
+          unit
+        })
+      }
+
       setCurrentCoords_redux(bd09towgs84_all(e.latlng.lng, e.latlng.lat))
     })
 
@@ -153,7 +192,6 @@ function App() {
     });
   }, []);
 
-
   //地点检索
   const [searchValue, setSearchValue] = useState([]);
 
@@ -182,7 +220,7 @@ function App() {
           <Input style={{ width: 400 }} value={searchValue} onChange={(value) => {
             setSearchValue(value.target.value)
           }}
-           
+
             id="suggestId" size="large" placeholder="地点检索" enterButton />
         </div>
       </div>
@@ -246,6 +284,7 @@ function App() {
           右键实心点删除节点
         </div>
       </div>
+      <Compass />
     </>
   );
 }

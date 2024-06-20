@@ -22,8 +22,14 @@ const bmapStore = createSlice({
       bd09coord:[0,0],
       gcj02coord:[0,0],
       wgs84coord:[0,0]
+    },
+    compass:{
+      width:0,
+      length:1,
+      unit:'KM'
     }
   },
+
   reducers: {
     setMap(state, action) {
       state.map = action.payload;
@@ -45,11 +51,14 @@ const bmapStore = createSlice({
     },
     setGeojsonEditTooltip(state, action) {
       state.geojson_edit_tooltip = action.payload
+    },
+    setCompass(state, action) {
+      state.compass = action.payload
     }
   }
 })
-const { setMap,addCustomLayers,removeCustomLayers,setTooltip,setCurrentCoords,setGeojsonEditTooltip,setView } = bmapStore.actions
-export { setMap,addCustomLayers,removeCustomLayers,setTooltip,setCurrentCoords,setGeojsonEditTooltip,setView }
+const { setMap,addCustomLayers,removeCustomLayers,setTooltip,setCurrentCoords,setGeojsonEditTooltip,setView,setCompass } = bmapStore.actions
+export { setMap,addCustomLayers,removeCustomLayers,setTooltip,setCurrentCoords,setGeojsonEditTooltip,setView,setCompass }
 
 const reducer = bmapStore.reducer
 export default reducer
