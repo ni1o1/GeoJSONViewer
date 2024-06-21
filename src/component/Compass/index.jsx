@@ -39,7 +39,7 @@ function Compass() {
                     display: true ? 'block' : 'none',
                     zIndex: 998,
                 }}>
-                    <img src="/images/compass.png" alt=""
+                    <img src="images/compass.png" alt=""
                         style={{ 
                             display: 'inline-block',
                             width: 30 }}
