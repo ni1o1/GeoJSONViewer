@@ -7,6 +7,7 @@ import { bd09towgs84_all } from '@/utils/coordtransform';
 import axios from 'axios';
 import { Button, Switch, AutoComplete, Input } from 'antd';
 import Compass from '@@/Compass';
+import Legend from '@@/Legend';
 
 const BMapGL = window.BMapGL;
 const mapvgl = window.mapvgl;
@@ -285,6 +286,7 @@ function App() {
         </div>
       </div>
       <Compass />
+      <Legend />
     </>
   );
 }
