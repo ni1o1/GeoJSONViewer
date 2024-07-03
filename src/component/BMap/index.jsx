@@ -253,7 +253,7 @@ function App() {
           {tooltip.title}
         </div>
         <div className='tooltip-content'>
-          {Object.keys(tooltip.info).map((key, index) => {
+          {tooltip.info && Object.keys(tooltip.info).map((key, index) => {
             return <div key={index}>
               <span className='tooltip-key'>{key}:</span>{tooltip.info[key]}</div>
           })}

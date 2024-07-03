@@ -195,7 +195,6 @@ function convert_geojson(geojson, method) {
       );
     }
   });
-
   return geojson;
 }
 

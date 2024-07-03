@@ -54,19 +54,19 @@ export default function ODview() {
     const changeLegend = (jsondataLayer, property, newval) => {
         // 首先，找到匹配的对象的索引
         const index = legend.findIndex(item => item.layerName === jsondataLayer.layerName);
-        
+
         // 创建一个新对象，其中包含更新后的属性
         const updatedItem = {
             ...legend[index],
             [property]: newval
         };
-        
+
         // 使用slice创建一个新数组，其中包含更新后的对象
         const newLegend = [...legend.slice(0, index), updatedItem, ...legend.slice(index + 1)];
-        
+
         // 更新legend状态
         setLegend_redux(newLegend);
-        
+
     }
 
     const handleupload_geojson = (file) => {
@@ -97,7 +97,6 @@ export default function ODview() {
                         ) {
                             //转坐标为bd09
                             const jsondata_bd09 = convert_geojson(jsondata, wgs84tobd09)
-
                             let jsondataLayer
                             if (geometry_type == 'Point') {
                                 // 3. 创建可视化图层，并添加到图层管理器中
@@ -140,6 +139,7 @@ export default function ODview() {
                                     enablePicked: true, // 是否可以拾取
                                     autoSelect: true, // 根据鼠标位置来自动设置选中项
                                     onMousemove: e => {
+
                                         if (e.dataIndex != -1) {
                                             setTooltip_redux({
                                                 title: file.name,
@@ -203,7 +203,14 @@ export default function ODview() {
                             jsondataLayer.strokeWeight = defaultstrokeWeight
                             jsondataLayer.visible = true
                             view.addLayer(jsondataLayer);
-                            jsondataLayer.setData(jsondata_bd09.features);
+                            jsondataLayer.setData(jsondata_bd09.features.map(f => {
+                                let newproperties = {}
+                                Object.keys(f.properties).filter(key => key != 'width').map(key => {
+                                    newproperties[key] = f.properties[key]
+                                })
+                                f.properties = newproperties
+                                return f
+                            }))
                             addCustomLayers_redux(jsondataLayer)
                             addlegnd(jsondataLayer)
                         } else {
@@ -251,7 +258,8 @@ export default function ODview() {
                             jsondataLayer.strokeWeight = defaultstrokeWeight
 
                             jsondataLayer.addEventListener('mousemove', function (e) {
-                                if (e.features.length == 0) {
+
+                                if (e.feature && e.features.length == 0) {
                                     setTooltip_redux({
                                         title: file.name,
                                         x: 0,
@@ -322,7 +330,6 @@ export default function ODview() {
     }
     const obj2geojson = (obj) => {
         var features = []
-        console.log(obj)
         obj.map(f => {
             if (f._className == 'PolylineOut') {
                 var feature = {
@@ -399,12 +406,12 @@ export default function ODview() {
                                 width: 120,
                                 render: (text, record) => (
                                     <Input size='small'
-                                    style={{ width: '120px' }}
-                                    defaultValue={text} onChange={(e) => {
-                                        const layer = customlayers.filter(item => item.layerName == record.layerName)[0]
-                                        layer.nickName = e.target.value
-                                        changeLegend(layer, 'nickName', e.target.value)
-                                    }} />
+                                        style={{ width: '120px' }}
+                                        defaultValue={text} onChange={(e) => {
+                                            const layer = customlayers.filter(item => item.layerName == record.layerName)[0]
+                                            layer.nickName = e.target.value
+                                            changeLegend(layer, 'nickName', e.target.value)
+                                        }} />
                                 )
                             },
                             {
@@ -432,7 +439,6 @@ export default function ODview() {
                                                 layer.setOptions({
                                                     renderOrder: value
                                                 })
-                                                console.log(layer.getOptions())
                                             } else {
                                                 layer && layer.setLevel(value - 15)
                                             }
